@@ -1,8 +1,18 @@
 #!/usr/bin/env node
 
 import { intro, outro, text, select, multiselect, confirm, spinner } from '@clack/prompts'
+import fs from 'fs';
+import { spawn } from 'child_process';
 import config from '../config/modules.json' with { "type": "json" }
 import color from 'picocolors'
+
+const state = {
+  projectName: '',
+  version: '',
+  modules: [],
+  extras: [],
+  allowPlugins: false,
+};
 
 async function main() {
   // Welcome/Intro
@@ -11,7 +21,7 @@ async function main() {
 
   // Step 1: Basics
   console.log(color.blue('\n1. The basics'))
-  const projectName = await text({
+  state.projectName = await text({
     message: 'What is the name of your project?',
     placeholder: 'my-silverstripe-project',
     validate: (value) => {
@@ -22,8 +32,24 @@ async function main() {
     },
   })
 
-  if (projectName === null) {
+  if (state.projectName === null) {
     outro('Setup cancelled. Goodbye!')
+    process.exit(0)
+  }
+
+  state.projectDir = await text({
+    message: 'Where do you want the project to live?',
+    placeholder: '/',
+    validate: (value) => {
+      if (!value) return 'Project name is required'
+      // if (!/^[a-z0-9-]+$/.test(value))
+      //   return 'Project name can only contain lowercase letters, numbers, and dashes'
+      return undefined
+    },
+  })
+  
+  if (state.projectDir === null || fs.existsSync(state.projectDir)) {
+    outro(color.red('Directory already exists. Please choose a different name.'))
     process.exit(0)
   }
 
@@ -33,7 +59,7 @@ async function main() {
     label: mod.name,
     hint: mod.description,
   }))
-  const versions = await select({
+  state.version = await select({
     message: 'Which version of Silverstripe do you want to target',
     options: [
       ...versionOptions,
@@ -48,7 +74,7 @@ async function main() {
     label: mod.name,
     hint: mod.description,
   }))
-  const modules = await multiselect({
+  state.modules = await multiselect({
     message: 'Select the modules you want to install',
     options: [
       ...moduleOptions,
@@ -56,31 +82,23 @@ async function main() {
     required: true,
   })
 
-  if (modules === null) {
+  if (state.modules === null) {
     outro('Setup cancelled. Goodbye!')
     process.exit(0)
   }
 
-  // Step 3: Extras
-  // console.log(color.blue('\n3. Pick extras'))
-  // const extras = await multiselect({
-  //   message: 'Select any extra features you want to add',
-  //   options: [
-  //     { value: 'blog', label: 'Blog Module', hint: 'Add blog functionality' },
-  //     { value: 'elemental', label: 'Elemental', hint: 'Content blocks' },
-  //     { value: 'userforms', label: 'User Forms', hint: 'Form builder' },
-  //     { value: 'googleanalytics', label: 'Google Analytics', hint: 'Analytics integration' },
-  //   ],
-  // })
-
-  // if (extras === null) {
-  //   outro('Setup cancelled. Goodbye!')
-  //   process.exit(0)
-  // }
+  state.allowPlugins = await select({
+    message: 'Allow composer plugins?',
+    options: [
+      { value: 'yes', label: 'Yes', hint: 'Allow plugins' },
+      { value: 'no', label: 'No', hint: 'Do not allow plugins' },
+    ],
+    required: true,
+  })
 
   // Step 4: Confirmation & Creation
   const shouldProceed = await confirm({
-    message: `Ready to create your Silverstripe project "${projectName}"?`,
+    message: `Ready to create your Silverstripe project "${state.projectName}"?`,
   })
 
   if (!shouldProceed) {
@@ -93,14 +111,60 @@ async function main() {
   s.start('Creating your Silverstripe project')
 
   // Simulate project creation with timeout
-  await new Promise((resolve) => setTimeout(resolve, 2000))
+  await new Promise((resolve) => {
+    fs.mkdirSync(state.projectDir, { recursive: true })
+
+    const installProject = spawn('composer', ['create-project', 'silverstripe/installer', state.projectName]);
+    installProject.stdout.on('data',  data => {
+      console.log(data.toString());
+    });
+    installProject.stderr.on('data', (data) => {
+      console.error(data.toString());
+    });
+    installProject.on('close', (code) => {
+      if (code !== 0) {
+        s.stop(color.red('Failed to create project'))
+        outro('Setup cancelled. Goodbye!')
+        process.exit(1)
+      }
+
+
+      const allowPlugins = spawn('composer', ['config', '--no-plugins', 'allow-plugins', state.allowPlugins], { cwd: state.projectDir });
+      allowPlugins.stdout.on('data',  data => {
+        console.log(data.toString());
+      });
+      allowPlugins.stderr.on('data', (data) => {
+        console.error(data.toString());
+      });
+      
+      // Install modules
+      const installModules = spawn('composer', ['require', ...state.modules], { cwd: state.projectDir });
+      installModules.stdout.on('data',  data => {
+        console.log(data.toString());
+      });
+      installModules.stderr.on('data', (data) => {
+        console.error(data.toString());
+      });
+      installModules.on('close', (code) => {
+        if (code !== 0) {
+          s.stop(color.red('Failed to create project'))
+          outro('Setup cancelled. Goodbye!')
+          process.exit(1)
+        }
+      });
+      s.stop(color.green('Project created successfully!'))
+      resolve();
+    });
+  })
+
 
   s.stop('Project created successfully!')
 
   // Output summary
   console.log('\n' + color.green('✓') + ' Project summary:')
-  console.log(`  Name: ${color.bold(projectName)}`)
-  console.log(`  Modules: ${color.bold(modules.join(', '))}`)
+  console.log(`  Name: ${color.bold(state.projectName)}`)
+  console.log(`  Version: ${color.bold(state.version)}`)
+  console.log(`  Modules: ${color.bold(state.modules.join(', '))}`)
   // if (extras.length > 0) {
   //   console.log(`  Extras: ${color.bold(extras.join(', '))}`)
   // }
@@ -108,8 +172,7 @@ async function main() {
   // Final instructions
   outro(`${color.green('Success!')} Your Silverstripe project is ready.`)
   console.log(`\nNext steps:
-  ${color.cyan('cd')} ${projectName}
-  ${color.cyan('composer install')}
+  ${color.cyan('cd')} ${state.projectDir}
   ${color.cyan('npm install')}
   ${color.cyan('npm run dev')}`)
 }
