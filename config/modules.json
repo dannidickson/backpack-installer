@@ -7,18 +7,39 @@
       "name": "6"
     }
   ],
-  "recommended": {
-    "modules": [
-      "silverstripe/linkfield",
-      "dnadesign/silverstripe-elemental",
-      "heyday/silverstripe-menumanager",
-      "jonom/silverstripe-betternavigator",
-      "silverstripe-terraformers/keys-for-cache",
-      "silverstripe/staticpublishqueue",
-      "silverstripe/taxonomy",
-      "silverstripe/crontask",
-      "silverstripeltd/bespoke-standards"
-    ]
+  "presets": {
+    "simple": {
+      "description": "A simple project",
+      "modules": [
+        "silverstripe/linkfield",
+        "dnadesign/silverstripe-elemental",
+        "silverstripeltd/bespoke-standards"
+      ]
+    },
+    "recommended": {
+      "description": "Includes, linkfield, elemental, menu manger and some patterns",
+      "modules": [
+        "silverstripe/linkfield",
+        "dnadesign/silverstripe-elemental",
+        "heyday/silverstripe-menumanager",
+        "jonom/silverstripe-betternavigator",
+        "silverstripe-terraformers/keys-for-cache",
+        "silverstripe/staticpublishqueue",
+        "silverstripe/taxonomy",
+        "silverstripe/crontask",
+        "silverstripeltd/bespoke-standards"
+      ],
+      "patterns": {
+        "pages": {
+          "FullWidthPage": "/Pages/FullWidthPage", 
+          "RestrictedWidthPage": "Pages/RestrictedWidthPage"
+        },
+        "blocks": {
+          "Accordion": "/Blocks/Accordion", 
+          "ImageCTA": "/Blocks/ImageCTA"
+        } 
+      }
+    }
   },
   "modules": [
     {

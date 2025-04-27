@@ -27,7 +27,7 @@ npm run serve
 ```
 
 > [!WARNING]
-> Do not include backpack code as part of a project. You should always be creating the project in a different directory, or moving the project from outside of the `EXPORTED_PROJECT` directory.
+> Do not include backpack code as part of a project. You should always be creating the project in a different directory, or moving the project from outside of the `.exported_projects` directory.
 > `backpack.config.js` is fine to include in the project. 
 
 ## Web instance

@@ -4,36 +4,6 @@
   <div class="logo-background"></div>
   <div class="backpack">
     <main class="backpack-container" aria-live="polite" role="region">
-      <nav class="backpack-navigation" aria-label="Backpack navigation" v-show="showSteps">
-        <h2>Silverstripe's Backpack</h2>
-
-        <div class="backpack-steps">
-          <h3>Steps</h3>
-          <ol>
-            <li class="backpack-navigation__item">
-              <button class="backpack-navigation__button" @click="setStep('basics')">
-                The basics
-              </button>
-            </li>
-            <li class="backpack-navigation__item">
-              <button class="backpack-navigation__button" @click="setStep('modules')">
-                Pick modules
-              </button>
-            </li>
-            <li class="backpack-navigation__item">
-              <button class="backpack-navigation__button" @click="setStep('extras')">
-                Pick extras
-              </button>
-            </li>
-            <li class="backpack-navigation__item">
-              <button class="backpack-navigation__button" @click="setStep('finished')">
-                Finished
-              </button>
-            </li>
-          </ol>
-        </div>
-      </nav>
-
       <section class="backpack-section" v-if="isStep('welcome')">
         <div class="backpack-section__content">
           <h1>Welcome to the Backpack</h1>
@@ -60,41 +30,72 @@
             </div>
           </div>
         </div>
-
-        <footer class="backpack-section__footer">
-          <button class="backpack-button" @click="setStep('basics')">Move onto the basics</button>
-        </footer>
       </section>
 
       <section class="backpack-section" v-if="isStep('basics')">
         <div class="backpack-section__header">
-          <h2>The basics</h2>
-          <p>Tell us about the site</p>
+          <h2 class="backpack-section__title">The basics</h2>
+          <p class="backpack-section__subtitle">Tell us about the site</p>
         </div>
 
         <div class="backpack-section__content">
-          <div>
-            <label for="siteName">Site Name</label>
-            <input id="siteName" type="text" required />
+          <div class="backpack-form">
+            <label class="backpack-form__label" for="siteName">Site Name</label>
+            <input class="backpack-form__input" id="siteName" type="text" required />
           </div>
-          <div>
-            <label for="version">Version</label>
-            <select id="version" required>
+
+          <div class="backpack-form">
+            <label class="backpack-form__label" for="folderDirectory">Directory</label>
+            <input class="backpack-form__input" id="folderDirectory" type="file" webkitdirectory required />
+          </div>
+
+
+          <div class="backpack-form">
+            <label class="backpack-form__label" for="version">Version</label>
+            <select class="backpack-form__select" id="version" required>
               <option value="5">5</option>
               <option value="6">6</option>
             </select>
           </div>
+
+          <div class="backpack-form">
+            <label for="ddev" class="backpack-form__label">Use DDEV?</label>
+            <input class="backpack-form__input" id="ddev" type="checkbox" required />
+          </div>
         </div>
 
-        <footer class="backpack-section__footer">
-          <button class="backpack-button" @click="setStep('modules')">Pick modules</button>
-        </footer>
+        <div class="backpack-section__content">
+          Want to use a preset?
+
+          <ul class="backpack-presets">
+            <li class="backpack-presets__item">
+              <h3 class="backpack-presets__title">Blank</h3>
+              <p class="backpack-presets__summary">A blank project. You would be better of using silverstripe/installer</p>
+              <p>Uses ddev</p>
+            </li>
+            <li class="backpack-presets__item">
+              <h3>Simple</h3>
+              <p>Uses ddev</p>
+              <p>Includes modules: Elemental, linkfield, bespoke-standards</p>
+              <p>Does not use any <b>backpack-patterns</b></p>
+            </li>
+            <li class="backpack-presets__item">
+              <h3>Recommended</h3>
+              <p>Uses ddev</p>
+              <p>Includes modules: Elemental, linkfield, menumanager, taxonomy, bespoke-standards</p>
+              <p>Uses the following <b>patterns</b></p>
+              <p>Includes Page templates: Full Width page, Restricted Width page</p>
+              <p>Includes blocks: Accordion, Image CTA, Links block</p>
+              <p>Includes templates: Hero, Menu and Footer</p>
+            </li>
+          </ul>
+        </div>
       </section>
 
       <section class="backpack-section" v-if="isStep('modules')">
         <div class="backpack-section__header">
-          <h2>Pick modules</h2>
-          <p>Pick a selection of modules</p>
+          <h2 class="backpack-section__title">Pick modules</h2>
+          <p class="backpack-section__subtitle">Pick a selection of modules</p>
         </div>
         <div class="backpack-section__content">
           <div class="module-selection">
@@ -113,17 +114,12 @@
             </div>
           </div>
         </div>
-
-        <footer class="backpack-section__footer">
-          <button class="backpack-button" @click="setStep('basics')">basics</button>
-          <button class="backpack-button" @click="setStep('extras')">Pick modules</button>
-        </footer>
       </section>
 
       <section class="backpack-section" v-if="isStep('extras')">
         <div class="backpack-section__header">
-          <h2>Pick extras</h2>
-          <p>Some extras</p>
+          <h2 class="backpack-section__title">Pick extras</h2>
+          <p class="backpack-section__subtitle">Some extras</p>
         </div>
         
         <div class="backpack-section__content">
@@ -139,6 +135,21 @@
         <h2>All finished</h2>
       </section>
     </main>
+
+    <footer class="backpack-footer">
+        <div class="backpack-section__footer" v-if="isStep('welcome')">
+          <button class="backpack-button" @click="setStep('basics')">Move onto the basics</button>
+        </div>
+
+        <div class="backpack-section__footer" v-if="isStep('basics')">
+          <button class="backpack-button" @click="setStep('modules')">Pick modules</button>
+        </div>
+
+        <div class="backpack-section__footer" v-if="isStep('modules')">
+          <button class="backpack-button" @click="setStep('basics')">basics</button>
+          <button class="backpack-button" @click="setStep('extras')">Pick modules</button>
+        </div>
+    </footer>
   </div>
 </template>
 <style scoped>

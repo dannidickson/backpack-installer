@@ -9,6 +9,7 @@
 
 .backpack {
   display: flex;
+  flex-direction: column;
   place-items: center;
   width: 100%;
   height: 100vh;

@@ -31,4 +31,5 @@ coverage
 
 test-results/
 playwright-report/
-EXPORTED_PROJECT/
+.patterns/
+.exported_projects/

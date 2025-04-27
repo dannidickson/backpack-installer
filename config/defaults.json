@@ -1,0 +1,12 @@
+{
+    "namespaces": {
+        "Pages": "App\\Page",
+        "Blocks": "App\\Block",
+        "Models": "App\\Model",
+        "Admin": "App\\Admin"
+    },
+    "paths": {
+        "ss": "themes/simple/templates/Layout/",
+        "php": "app/src/"
+    }
+}

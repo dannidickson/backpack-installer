@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
+    "express": "^5.1.0",
     "http-server": "^14.1.1",
     "pinia": "^3.0.1",
     "vue": "^3.5.13"
